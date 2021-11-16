@@ -1,8 +1,8 @@
 /*******************************************************************************
 * Fecha:		2021-10-23
-* Instituto:	Educate Peru Consultores
-* Projecto:		Radiografía de la pobreza en el Perú durante los diez útlimos años
-* Título:		Reporte
+* Instituto:	Grupo CEA
+* Curso:		Programación estadística (con Stata)
+* Sesión:		Ejemplo de elaboración de reporte en Word
 * Autor:		Kevin Pérez García
 * email:		econ.perez.garcia.k@gmail.com
 ********************************************************************************
@@ -10,15 +10,32 @@
 *** Objetivo:
 	Construir variables
 	
-***	Requerimientos:
+*** Requerimientos:
 	inputs: 	"${data_construccion}/sumaria-m100.dta"
 	outputs: 	"${data_tablas}/sumaria-m100-construida.dta"
 	
 *** Outline:
-	1. Variable ID y Duplicados
-		1.1 Cargar datos
-		1.2 Duplicates and ID variable 
-		1.3 Export duplicates
+	1.1 Cargando base de datos
+	1.2 Iniciando documento word
+	1.3 Insertando título
+	1.4 Insertando sección con cita
+		1.4.1 Insertando encabezado (subtítulo)
+		1.4.2 Insertando párrafo con cita
+	1.5 Insertando sección con estadísticos
+		1.5.1 Insertando encabezado (subtítulo)
+		1.5.2 Calculando estadísticos
+		1.5.3 Insertando párrafo con estadísticos
+	1.6 Insertando sección con gráfico
+		1.6.1 Insertando encabezado (subtítulo)
+		1.6.2 Graficando
+		1.6.3 Exportando gráfico a uno admitido en word
+		1.6.4 Estableciendo alineación central
+		1.6.5 Insertando gráfico
+	1.7 Insertando tabla de estimación
+		1.7.1 Insertando encabezado (subtítulo)
+		1.7.2 Estimando regresión
+		1.7.3 Insertando tabla de estimación
+	1.8 Apilando cambios realizados en el documento
 
 *** Observaciones:
 
@@ -48,39 +65,41 @@
 	putdocx paragraph, style(Title)
 	putdocx text ("Informe sobre el bajo peso al nacer")
 
-*** 1.4 Insertando encabezado (subtítulo)
-	putdocx paragraph, style(Heading1)
-	putdocx text ("Introducción a los datos")
+*** 1.4 Insertando sección con cita
 
-*** 1.5 Insertando párrafo con cita
-	putdocx paragraph
-	putdocx text ("Tenemos datos sobre el peso al nacer de Hosmer, Lemeshow, and ")
-	putdocx text ("Sturdivant (2013, 24).")
+	*** 1.4.1 Insertando encabezado (subtítulo)
+		putdocx paragraph, style(Heading1)
+		putdocx text ("Introducción a los datos")
 
-*** 1.6 Insertando sección con estadísticos
+	*** 1.4.2 Insertando párrafo con cita
+		putdocx paragraph
+		putdocx text ("Tenemos datos sobre el peso al nacer de Hosmer, Lemeshow, and ")
+		putdocx text ("Sturdivant (2013, 24).")
 
-	*** 1.6.1 Insertando encabezado (subtítulo)
+*** 1.5 Insertando sección con estadísticos
+
+	*** 1.5.1 Insertando encabezado (subtítulo)
 		putdocx paragraph, style(Heading1)
 		putdocx text ("Resumen de estadísticas")
 
-	*** 1.6.2 Calculando estadísticos
+	*** 1.5.2 Calculando estadísticos
 		summarize bwt
 		return list
 
-	*** 1.6.3 Insertando párrafo con estadísticos
+	*** 1.5.3 Insertando párrafo con estadísticos
 		putdocx paragraph
 		putdocx text ("Tenemos el peso registrado de `r(N)' bebés ")
 		putdocx text ("con un peso medio al nacer de ")
 		putdocx text (" `r(mean)' "), nformat(%5.2f)
 		putdocx text (" gramos .")
 
-*** 1.7 Insertando sección con gráfico
+*** 1.6 Insertando sección con gráfico
 	
-	*** 1.7.1 Insertando encabezado (subtítulo)
+	*** 1.6.1 Insertando encabezado (subtítulo)
 		putdocx paragraph, style(Heading1)
 		putdocx text ("Peso al nacer por estado de tabaquismo de la madre")
 
-	*** 1.7.2 Graficando
+	*** 1.6.2 Graficando
 		graph hbar bwt, over(ht,relabel(1 "No hypertension" 2 "Has history of hypertension")) over(smoke) asyvars ytitle(Average birthweight (grams)) title(Baby birthweights)   subtitle(by mother's smoking status and history of hypertension)
 		
 		/* Nota.
@@ -89,26 +108,26 @@
 		de hipertensión.
 		*/
 
-	*** 1.7.3 Exportando gráfico a uno admitido en word
+	*** 1.6.3 Exportando gráfico a uno admitido en word
 		quietly graph export "${outputs_graficos}/bweight.png", replace
 		
 		* Nota. Formatos de imagen admitidos: .jpg, .emf, .tif o .png.
 		
-	*** 1.7.4 Estableciendo alineación central
+	*** 1.6.4 Estableciendo alineación central
 		putdocx paragraph, halign(center)
 	
-	*** 1.7.5 Insertando gráfico
+	*** 1.6.5 Insertando gráfico
 		putdocx image bweight.png, width(4) height(2.8)
 		
 		* Nota. Estableciendo el ancho de la imagen en 4 pulgadas y el altura en 2,8 pulgadas.
 
-*** 1.8 Insertando tabla de estimaciónputdocx begin
+*** 1.7 Insertando tabla de estimación
 	
-	*** 1.8.1 Insertando encabezado (subtítulo)
+	*** 1.7.1 Insertando encabezado (subtítulo)
 		putdocx paragraph, style(Heading1)
 		putdocx text ("Regression results")
 
-	*** 1.8.2 Estimando regresión
+	*** 1.7.2 Estimando regresión
 		regress bwt smoke age, noheader
 		
 		/* Nota.
@@ -116,10 +135,10 @@
 		la edad de la madre (age) y si fuma (smoke).
 		*/
 
-	*** 1.8.3 Insertando tabla de estimación
+	*** 1.7.3 Insertando tabla de estimación
 		putdocx table bweight = etable, title("Regresión lineal del peso al nacer")
 		
 		* Nota. Usamos la opción <title()> para agregar un título a nuestra tabla.
 
-*** 1.9 Apilando cambios realizados en el documento
+*** 1.8 Apilando cambios realizados en el documento
 	putdocx save "${outputs_reportes}/reporte.docx", append
